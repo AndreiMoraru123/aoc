@@ -1,3 +1,4 @@
+import itertools
 import operator
 from typing import Dict, Tuple
 from functools import reduce
@@ -23,14 +24,10 @@ def process_game_line(line: str) -> Tuple[str, bool, int]:
     min_cubes = {color: 0 for color in rules}
     sets = cubes_info.split(';')
 
-    for s in sets:
-        for draw in s.split(','):
-            for color in rules:
-                if color in draw:
-                    num_cubes = int(build_number(draw))
-                    min_cubes[color] = max(min_cubes[color], num_cubes)
-    power = reduce(operator.mul, (min_cubes[color] for color in rules))
-    is_valid_game = all(validate(color, draw) for s in sets for color in rules for draw in s.split(','))
+    draws = list(itertools.chain.from_iterable(map(lambda s: s.split(','), sets)))
+    min_cubes = {color: max((int(build_number(draw)) for draw in draws if color in draw), default=0) for color in rules}
+    power = reduce(operator.mul, min_cubes.values())
+    is_valid_game = all(validate(color, draw) for draw in draws for color in rules)
     return nr, is_valid_game, power
 
 OK_GAME: Dict[str, bool] = {}
