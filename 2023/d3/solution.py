@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import List, Tuple
 
 directions = [
     (0, 1),  # right
@@ -11,80 +11,64 @@ directions = [
     (1, 1),  # diagonal up right
 ]
 
-def process_adjacent_cells(matrix: List[List[str]], x: int, y: int, rule: Callable) -> List[str]:
-    results = []
-    for dx, dy in directions:
-        nx, ny = x + dx, y + dy
-        if 0 <= nx < len(matrix) and 0 <= ny < len(matrix[0]):
-            result = rule(matrix, nx, ny)
-            if result is not None:
-                results.append(result)
-    return results
 
-def is_adjacent(matrix: List[List[str]], x: int, y: int) -> bool:
+def is_symbol(char: str) -> bool:
+    return not char.isdigit() and char != "."
 
-    def is_symbol(char: str):
-        return not char.isdigit() and char != '.'
 
-    def check_symbol(m, i, j):
-        return is_symbol(m[i][j])
-
-    return any(process_adjacent_cells(matrix, x, y, check_symbol))
-
-def get_adjacent_numbers(matrix: List[List[str]], x: int, y: int) -> List[int]:
-    adj_numbers = []
-    for dx, dy in directions:
-        nx, ny = x + dx, y + dy
-        if 0 <= nx < len(matrix) and 0 <= ny < len(matrix[0]) and matrix[nx][ny].isdigit():
-            start_ny = ny # trace back to the start of the number
-            while start_ny > 0 and matrix[nx][start_ny-1].isdigit():
-                start_ny -= 1
-            if (nx, start_ny) not in adj_numbers: # avoid double counting
-                adj_numbers.append((nx, start_ny))
-    return [extract_number(matrix, x, y) for x, y in adj_numbers]
+def is_gear(char: str) -> bool:
+    return char == "*"
 
 
 def extract_number(matrix: List[List[str]], x: int, y: int) -> int:
-    number = ''
-    while y < len(matrix[0]) and matrix[x][y].isdigit():
+    number = ""
+    while (
+        y < len(matrix[0]) and matrix[x][y].isdigit()
+    ):  # start constructing a number on a row
         number += matrix[x][y]
         y += 1
     return int(number)
 
-def calculate_ratio(matrix: List[List[str]]) -> int:
+
+def get_adjacent_numbers(matrix: List[List[str]], x: int, y: int) -> List[int]:
+
+    adj_numbers = []
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
+        if (
+            0 <= nx < len(matrix)
+            and 0 <= ny < len(matrix[0])
+            and matrix[nx][ny].isdigit()
+        ):
+            start_ny = ny  # trace back to the start of the number
+            while (
+                start_ny > 0 and matrix[nx][start_ny - 1].isdigit()
+            ):  # if the previous char is a digit, I'm not at the beginning of the number
+                start_ny -= 1
+            if (nx, start_ny) not in adj_numbers:  # avoid double counting
+                adj_numbers.append((nx, start_ny))
+
+    return [extract_number(matrix, x, y) for x, y in adj_numbers]
+
+
+def walk(matrix: List[List[str]]) -> Tuple[int, int]:
     total_ratio = 0
+    total_sum = 0
     for i, row in enumerate(matrix):
         for j, char in enumerate(row):
-            if char == '*':
+            if is_symbol(char):
+                part_numbers = get_adjacent_numbers(matrix, i, j)
+                total_sum += sum(part_numbers)
+            if is_gear(char):
                 adj_numbers = get_adjacent_numbers(matrix, i, j)
                 if len(adj_numbers) == 2:
                     total_ratio += adj_numbers[0] * adj_numbers[1]
-    return total_ratio
+    return total_sum, total_ratio
 
-def walk(matrix: List[List[str]]) -> int:
-    s: int = 0
-    for i, row in enumerate(matrix):
-        j = 0  # start counting digits that form numbers
-        while j < len(row):
-            number = ''
-            start_j = j
-            if row[j].isdigit(): # the first digit
-                while j < len(row) and row[j].isdigit(): # finding the whole number
-                    number += row[j]
-                    j += 1
-                number = int(number)
-                if any(is_adjacent(matrix, i, nj) for nj in range(start_j, j)):
-                    s += number
-            else:
-                j += 1
-    return s
-                
 
-with open('input.txt', 'r') as f:
+with open("input.txt", "r") as f:
     matrix = [list(line.strip()) for line in f]
 
-total_sum = walk(matrix)
-print(total_sum)
-
-gear_ratio = calculate_ratio(matrix)
+part_numbers_sum, gear_ratio = walk(matrix)
+print(part_numbers_sum)
 print(gear_ratio)
