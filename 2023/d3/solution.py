@@ -31,7 +31,6 @@ def extract_number(matrix: List[List[str]], x: int, y: int) -> int:
 
 
 def get_adjacent_numbers(matrix: List[List[str]], x: int, y: int) -> List[int]:
-
     adj_numbers = []
     for dx, dy in directions:
         nx, ny = x + dx, y + dy
