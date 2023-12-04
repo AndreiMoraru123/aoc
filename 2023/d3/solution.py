@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import List, Tuple
 
 directions = [
@@ -57,11 +58,11 @@ def walk(matrix: List[List[str]]) -> Tuple[int, int]:
         for j, char in enumerate(row):
             if is_symbol(char):
                 part_numbers = get_adjacent_numbers(matrix, i, j)
-                total_sum += sum(part_numbers)
+                total_sum += reduce(lambda a, b: a + b, part_numbers, 0)
             if is_gear(char):
                 adj_numbers = get_adjacent_numbers(matrix, i, j)
                 if len(adj_numbers) == 2:
-                    total_ratio += adj_numbers[0] * adj_numbers[1]
+                    total_ratio += reduce(lambda a, b: a * b, adj_numbers)
     return total_sum, total_ratio
 
 
