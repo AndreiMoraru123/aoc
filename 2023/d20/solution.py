@@ -46,7 +46,6 @@ print(prod(counts.values()))
 
 
 types = {}
-rec = {}
 inv = defaultdict(list)
 
 conj_state = defaultdict(dict)
@@ -57,10 +56,8 @@ for line in f:
     sender, receivers = line.strip().split(" -> ")
     receivers = receivers.split(", ")
     types[sender[1:]] = sender[0], receivers
-    rec[sender] = receivers
     for receiver in receivers:
         conj_state[receiver][sender[1:]] = False
-
 
 for sender, receivers in types.items():
     for receiver in receivers[1]:
