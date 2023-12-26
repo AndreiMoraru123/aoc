@@ -1,5 +1,4 @@
-from pprint import pprint
-from math import prod
+from math import prod, lcm
 from collections import defaultdict, deque
 
 f = open("input.txt")
@@ -16,6 +15,7 @@ for line in f:
 
 counts = defaultdict(int)
 q = deque()
+
 
 def send(s: str, r: str, state: bool) -> None:
     counts[state] += 1
@@ -44,55 +44,68 @@ for _ in range(1000):
 
 print(prod(counts.values()))
 
+
+
 types = {}
+rec = {}
+origin = {}
+inv = defaultdict(list)
 
 conj_state = defaultdict(dict)
 flip_state = defaultdict(bool)
 
-f = open('toy_input.txt')
+f = open("input.txt")
 for line in f:
-    sender, receivers = line.strip().split(' -> ')
-    receivers = receivers.split(', ')
+    sender, receivers = line.strip().split(" -> ")
+    receivers = receivers.split(", ")
     types[sender[1:]] = sender[0], receivers
+    rec[sender] = receivers
     for receiver in receivers:
         conj_state[receiver][sender[1:]] = False
-    
-def reset_states():
-    for key in flip_state.keys():
-        flip_state[key] = False
-    for key, value in conj_state.items():
-        for k in value.keys():
-            conj_state[key][k] = False
 
-min_button_presses = float('inf')
-press_count = 0
 
-while press_count < min_button_presses:
+for sender, receivers in types.items():
+    for receiver in receivers[1]:
+        if types[sender][0] == "&":
+            if receiver not in origin:
+                origin[receiver] = {}
+            origin[receiver][sender] = False
+        inv[receiver].append(sender)
 
-    reset_states()
-    counts = defaultdict(int)
-    q = deque()
+senders = inv[inv["rx"][0]]
 
-    for _ in range(press_count + 1):
-        send("button", "roadcaster", False)
-        while q:
-            x, state = q.popleft()
-            if not x in types:
-                if x == "rx" and not state:
-                    min_button_presses += 1
-                continue
-            match types[x]:
-                case "b", receivers:
-                    for receiver in receivers:
-                        send(x, receiver, state)
-                case "%", receivers:
-                    flip_state[x] = not flip_state[x]
-                    for receiver in receivers:
-                        send(x, receiver, flip_state[x])
-                case "&", receivers:
-                    pulse = not all(conj_state[x].values())
-                    for receiver in receivers:
-                        send(x, receiver, pulse)
-        press_count += 1
+q = deque()
+prev = defaultdict(int)
+lcm_counts = defaultdict(int)
+cycles = []
+on = set()
+c = 0
 
-print(min_button_presses)
+while len(cycles) < len(senders):
+    c += 1
+    send("button", "roadcaster", False)
+    while q:
+        x, state = q.popleft()
+        if state == False:
+            # lcm_counts == 2 means state has been set to False 2 times => a full cycle has occured
+            if x in prev and lcm_counts[x] == 2 and x in senders:
+                cycles.append(c - prev[x])
+            prev[x] = c
+            lcm_counts[x] += 1
+        if len(cycles) == len(senders):
+            print(lcm(*cycles))
+            break
+        if x not in types:
+            continue
+        match types[x]:
+            case "b", receivers:
+                for receiver in receivers:
+                    send(x, receiver, state)
+            case "%", receivers if not state:
+                flip_state[x] = not flip_state[x]
+                for receiver in receivers:
+                    send(x, receiver, flip_state[x])
+            case "&", receivers:
+                pulse = not all(conj_state[x].values())
+                for receiver in receivers:
+                    send(x, receiver, pulse)
