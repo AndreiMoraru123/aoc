@@ -45,10 +45,8 @@ for _ in range(1000):
 print(prod(counts.values()))
 
 
-
 types = {}
 rec = {}
-origin = {}
 inv = defaultdict(list)
 
 conj_state = defaultdict(dict)
@@ -66,10 +64,6 @@ for line in f:
 
 for sender, receivers in types.items():
     for receiver in receivers[1]:
-        if types[sender][0] == "&":
-            if receiver not in origin:
-                origin[receiver] = {}
-            origin[receiver][sender] = False
         inv[receiver].append(sender)
 
 senders = inv[inv["rx"][0]]
