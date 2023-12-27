@@ -26,23 +26,21 @@ grid[start] = "."
 
 print(walk(lambda i, j: grid.get((i, j)), start, t=64))
 
-
 get = lambda i, j: grid[i % n, j % m]
+step_count = 26501365
 
-s1 = 26501365 % n
-p1 = walk(get, start, 26501365 % n)
-s2 = 26501365 % n + n
-p2 = walk(get, start, 26501365 % n + n)
-s3 = 26501365 % n + 2 * n
-p3 = walk(get, start, 26501365 % n + 2 * n)
-s4 = 26501365 % n + 3 * n
-p4 = walk(get, start, 26501365 % n + 3 * n)
+s1 = step_count % n
+p1 = walk(get, start, s1)
+s2 = step_count % n + n
+p2 = walk(get, start, s2)
+s3 = step_count % n + 2 * n
+p3 = walk(get, start, s3)
+s4 = step_count % n + 3 * n
+p4 = walk(get, start, s4)
 
 steps = np.array([s1, s2, s3, s4])
 plots = np.array([p1, p2, p3, p4])
 
 coefficients = np.polyfit(steps, plots, 2)
-
-step_count = 26501365
 prediction = np.polyval(coefficients, step_count)
 print(int(prediction))
