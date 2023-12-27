@@ -5,7 +5,6 @@ def walk(fn: Callable, start: Tuple[int, int], t: int) -> int:
     bfs = set([start])
     for _ in range(t):
         new_bfs = set()
-        breakpoint()
         for i, j in bfs:
             new_bfs.add((i, j - 1))
             new_bfs.add((i, j + 1))
