@@ -1,3 +1,4 @@
+from z3 import Real, Solver, sat
 from typing import NamedTuple, List
 
 
@@ -83,3 +84,23 @@ for i in range(len(trajectories)):
                 ans += 1
 
 print(ans)
+
+solver = Solver()
+px, py, pz = Real('px'), Real('py'), Real('pz')
+vx, vy, vz = Real('vx'), Real('vy'), Real('vz')
+time = [Real(f'T{i}') for i in range(len(trajectories))]
+
+for i in range(len(trajectories)):
+    # current position = initial position + velocity * time 
+    # for the rock to colide with the hailstones, their positions must be equal at time[i]
+    # px + vx * t[i] = traj.pos.x + traj.vel.x * t
+    solver.add(px + vx * time[i]- trajectories[i].pos.x + trajectories[i].vel.x * time[i] == 0)
+    # py + vy * t[i] = traj.pos.y + traj.vel.y * t
+    solver.add(py + vy * time[i]- trajectories[i].pos.y + trajectories[i].vel.y * time[i] == 0)
+    # pz + vz * t[i] = traj.pos.z + traj.vel.z * t
+    solver.add(pz + vz * time[i]- trajectories[i].pos.z + trajectories[i].vel.z * time[i] == 0)
+
+res = solver.check()
+if res == sat:
+    model = solver.model()
+    print(model.eval(px + py + pz))
