@@ -1,6 +1,17 @@
 from collections import Counter
 
-def part1(file: str) -> Int:
+@llvm
+def sub(a: int, b: int) -> int:
+    %res = sub i64 %a, %b
+    ret i64 %res
+
+@llvm
+def mul(a: int, b: int) -> int:
+    %res = mul i64 %a, %b
+    ret i64 %res
+
+
+def part1(file: str) -> int:
     left = List[int]()
     right = List[int]()
 
@@ -17,10 +28,10 @@ def part1(file: str) -> Int:
 
     @par
     for l, r in zip(left, right):
-        ans += abs(l - r)
+        ans += abs(sub(l, r))
     return ans
 
-def part2(file: str) -> Int:
+def part2(file: str) -> int:
     left = List[int]()
     right = Counter()
 
@@ -35,7 +46,7 @@ def part2(file: str) -> Int:
 
     @par
     for l in left:
-        ans += l * right.get(l, 0)
+        ans += mul(l , right.get(l, 0))
     return ans
 
 
