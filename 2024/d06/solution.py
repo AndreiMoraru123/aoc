@@ -5,11 +5,11 @@ def part1(file: str) -> int:
         rows = len(grid)
         cols = len(grid[0])
 
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == "^":
-                    sr, sc = r, c
+        sr, sc = next(
+            (r, c) for r in range(rows) for c in range(cols) if grid[r][c] == "^"
+        )
 
+        @par
         for wr in range(rows):
             for wc in range(cols):
                 r, c = sr, sc
@@ -46,11 +46,11 @@ def part2(file: str) -> int:
         rows = len(grid)
         cols = len(grid[0])
 
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == "^":
-                    sr, sc = r, c
+        sr, sc = next(
+            (r, c) for r in range(rows) for c in range(cols) if grid[r][c] == "^"
+        )
 
+        @par
         for wr in range(rows):
             for wc in range(cols):
                 r, c = sr, sc
