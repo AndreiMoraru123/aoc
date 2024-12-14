@@ -19,6 +19,18 @@ def move(pos: List[Pos], vel: List[Vel], n: int = 7, m: int = 11) -> List[Pos]:
     return new_pos
 
 
+def draw(pos: List[Pos], iteration: int, n: int, m: int, file: str = "output.txt"):
+    grid = [["." for _ in range(n)] for _ in range(m)]
+    for p in pos:
+        grid[p.y][p.x] = "#"
+
+    with open(file, "a") as f:
+        f.write(f"Iteration {iteration}\n\n")
+        for row in grid:
+            f.write("".join(row) + "\n")
+        f.write("\n")
+
+
 def count(pos: List[Pos], n: int = 7, m: int = 11) -> int:
     q1 = q2 = q3 = q4 = 0
     for p in pos:
@@ -35,7 +47,7 @@ def count(pos: List[Pos], n: int = 7, m: int = 11) -> int:
     return q1 * q2 * q3 * q4
 
 
-def part1(file: str) -> int:
+def create(file: str) -> Tuple[List[Pos], List[Vel]]:
     with open(file) as f:
         lines = f.read().strip().split("\n")
 
@@ -49,6 +61,11 @@ def part1(file: str) -> int:
         pos.append(Pos(int(pc[0]), int(pc[1])))
         vel.append(Vel(int(vc[0]), int(vc[1])))
 
+    return pos, vel
+
+
+def part1(file: str) -> int:
+    pos, vel = create(file)
     for _ in range(100):
         pos = move(pos, vel, 101, 103)
 
@@ -57,11 +74,18 @@ def part1(file: str) -> int:
 
 
 def part2(file: str) -> int:
-    with open(file) as f:
-        config = f.read().strip()
-    ans = 0
-    return ans
+    pos, vel = create(file)
+    with open("output.txt", "w") as f:
+        f.write("")
+
+    for i in range(10**4):
+        pos = move(pos, vel, 101, 103)
+        draw(pos, i + 1, 101, 103)
+        if i == 6515:  # check visually
+            return i + 1
+
+    return 0
 
 
 print(part1("input.txt"))
-# print(part2("input.txt"))
+print(part2("input.txt"))
