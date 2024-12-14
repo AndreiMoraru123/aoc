@@ -1,3 +1,6 @@
+from python import z3
+
+
 @tuple
 class Claw:
     ax: int
@@ -7,11 +10,6 @@ class Claw:
     px: int
     py: int
 
-@llvm
-def calc(a: int, b: int) -> int:
-    %cost_a = mul i64 %a, 3
-    %total = add i64 %cost_a, %b
-    ret i64 %total
 
 def parse(s: str, higher: Optional[int] = 0) -> Tuple[int, int]:
     parts = s.split(",")
@@ -21,25 +19,22 @@ def parse(s: str, higher: Optional[int] = 0) -> Tuple[int, int]:
     y = higher + int(y)
     return x, y
 
-def solve(c: Claw, max_tries: int = 100) -> int:
-    # ax * a + bx * b = px
-    # ay * a + by * b = py
-    @par(num_threads=max_tries // 100)
-    for a in range(max_tries + 1):
-        if c.bx != 0:
-            b_x = (c.px - c.ax * a) / c.bx
-        else:
-            if c.ax * a != c.px:
-                continue
-            b_x = 0
 
-        if b_x != int(b_x) or b_x < 0 or b_x > max_tries:
-            continue
-        b_x = int(b_x)
+def solve(c: Claw) -> int:
+    x1 = z3.Int("x1")
+    x2 = z3.Int("x2")
 
-        if c.ay * a + c.by * b_x == c.py:
-            return calc(a, b_x)
-    return 0
+    solver = z3.Solver()
+    solver.add(x1 * c.ax + x2 * c.bx == c.px)
+    solver.add(x1 * c.ay + x2 * c.by == c.py)
+
+    if solver.check() == z3.sat:
+        m = solver.model()
+        ret = m.eval(3 * x1 + x2).as_long()
+        return ret
+    else:
+        return 0
+
 
 def part1(file: str) -> int:
     with open(file) as f:
@@ -56,9 +51,9 @@ def part1(file: str) -> int:
 
     ans = 0
     for m in machines:
-        tokens = solve(m)
-        ans += tokens
+        ans += solve(m)
     return ans
+
 
 def part2(file: str) -> int:
     with open(file) as f:
@@ -76,9 +71,9 @@ def part2(file: str) -> int:
 
     ans = 0
     for m in machines:
-        tokens = solve(m, high * 10)
-        ans += tokens
+        ans += solve(m)
     return ans
 
-print(part1("input.txt"))
 
+print(part1("input.txt"))
+print(part2("input.txt"))
